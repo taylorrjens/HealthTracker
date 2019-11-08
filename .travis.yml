@@ -10,4 +10,5 @@ deploy:
   skip_cleanup: true
   provider: firebase
   token: $FIREBASE_TOKEN
-  project: authentication2-a2c4b
+  project: health-tracker-148bc
+  
