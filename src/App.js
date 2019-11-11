@@ -19,7 +19,8 @@ import VerySatisfiedIcon from "@material-ui/icons/SentimentVerySatisfied";
 import { Line } from "react-chartjs-2";
 import { Link, Route } from "react-router-dom";
 import { auth, db } from "./firebase";
-var unirest = require("unirest");
+//import unirest from "unirest"
+import axios from "axios";
 var moment = require("moment");
 
 export function App(props) {
@@ -158,26 +159,22 @@ function Survey(props) {
   }, []);
 
   useEffect(() => {
-    unirest
-      .get(
-        "https://community-open-weather-map.p.rapidapi.com/weather?lat=${lat}&lon=${long}&units=imperial"
-      )
-      // .query({
-      // lat: {lat},
-      //lon: {long},
-      //units: '"imperial"',
-      //q: "Provo"
-      //})
-      .headers({
-        "x-rapidapi-host": "community-open-weather-map.p.rapidapi.com",
-        "x-rapidapi-key": "0006459f98mshf33d5a7b9d1d9adp1f9dc9jsnb814693123d6"
+    axios
+      .get("https://community-open-weather-map.p.rapidapi.com/weather", {
+        headers: {
+          "x-rapidapi-host": "community-open-weather-map.p.rapidapi.com",
+          "x-rapidapi-key": "0006459f98mshf33d5a7b9d1d9adp1f9dc9jsnb814693123d6"
+        },
+        params: {
+          lat: lat,
+          lon: long,
+          units: "imperial"
+        }
       })
-      .end(function(res) {
-        setTemp(res.body.main.temp);
-        console.log(res.body);
+      .then(res => {
+        setTemp(res.data.main.temp);
       });
-    return;
-  }, [long, lat]);
+  }, [lat, long]);
 
   const handleSave = () => {
     let today = new Date();
