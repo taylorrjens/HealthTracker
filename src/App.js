@@ -19,7 +19,6 @@ import VerySatisfiedIcon from "@material-ui/icons/SentimentVerySatisfied";
 import { Line } from "react-chartjs-2";
 import { Link, Route } from "react-router-dom";
 import { auth, db } from "./firebase";
-//import unirest from "unirest"
 import axios from "axios";
 var moment = require("moment");
 
@@ -178,7 +177,7 @@ function Survey(props) {
 
   const handleSave = () => {
     let today = new Date();
-    today = moment(today).format("YYY-MM-DD HH:mm");
+    today = moment(today).format("YYYY-MM-DD HH:mm");
     db.collection("users")
       .doc(props.user.uid)
       .collection("surveys")
@@ -311,10 +310,11 @@ function Charts(props) {
       }
     ]
   };
+
   const options = {
     scales: {
       yAxes: [{ id: "A", position: "left" }, { id: "B", position: "right" }],
-      xAxes: [{ type: "time", time: { DisplayFromats: { hour: "MMM D" } } }]
+      xAxes: [{ type: "time", time: { DisplayFormats: { hour: "MMM D" } } }]
     }
   };
 
