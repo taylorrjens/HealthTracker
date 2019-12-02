@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import Paper from "@material-ui/core/Paper";
-import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
@@ -11,16 +9,11 @@ import Drawer from "@material-ui/core/Drawer";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
-import Radio from "@material-ui/core/Radio";
-import DissatisfiedIcon from "@material-ui/icons/SentimentDissatisfied";
-import SatisfiedIcon from "@material-ui/icons/SentimentSatisfied";
-import VeryDissatisfiedIcon from "@material-ui/icons/SentimentVeryDissatisfied";
-import VerySatisfiedIcon from "@material-ui/icons/SentimentVerySatisfied";
-import { Line } from "react-chartjs-2";
 import { Link, Route } from "react-router-dom";
 import { auth, db } from "./firebase";
-import axios from "axios";
-var moment = require("moment");
+import Static from "./Static";
+import Profile from "./Profile";
+import Survey from "./Survey";
 
 export function App(props) {
   const [drawer_open, setDrawerOpen] = useState(false);
@@ -54,7 +47,7 @@ export function App(props) {
   }
 
   return (
-    <div>
+    <div style={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
           <IconButton
@@ -69,9 +62,9 @@ export function App(props) {
           <Typography
             color="inherit"
             variant="h6"
-            style={{ marginLeft: 15, flexGrow: 1 }}
+            style={{ marginLeft: 15, marginRight: 15, flexGrow: 1 }}
           >
-            Health Tracker
+            General Info
           </Typography>
           <Typography color="inherit" style={{ marginRight: 30 }}>
             Hi {user.email}!
@@ -96,7 +89,17 @@ export function App(props) {
               setDrawerOpen(false);
             }}
           >
-            <ListItemText primary="Take Survey" />
+            <ListItemText primary="Static" />
+          </ListItem>
+          <ListItem
+            button
+            to="/app/survey"
+            component={Link}
+            onClick={() => {
+              setDrawerOpen(false);
+            }}
+          >
+            <ListItemText primary="Basic Info Survey" />
           </ListItem>
           <ListItem
             button
@@ -106,13 +109,27 @@ export function App(props) {
               setDrawerOpen(false);
             }}
           >
-            <ListItemText primary="Chart" />
+            <ListItemText primary="Your Profile" />
           </ListItem>
         </List>
       </Drawer>
       <Route
         exact
         path="/app/"
+        render={routeProps => {
+          return (
+            <Static
+              user={user}
+              match={routeProps.match}
+              location={routeProps.location}
+              history={routeProps.history}
+            />
+          );
+        }}
+      />
+      <Route
+        exact
+        path="/app/survey/"
         render={routeProps => {
           return (
             <Survey
@@ -125,10 +142,10 @@ export function App(props) {
         }}
       />
       <Route
-        path="/app/charts/"
+        path="/app/profile/"
         render={routeProps => {
           return (
-            <Charts
+            <Profile
               user={user}
               match={routeProps.match}
               location={routeProps.location}
@@ -137,195 +154,6 @@ export function App(props) {
           );
         }}
       />
-    </div>
-  );
-}
-
-function Survey(props) {
-  const [radioValue, setRadioValue] = useState(3);
-  const [sleep, setSleep] = useState(7);
-  const [temp, setTemp] = useState(70);
-  const [lat, setLat] = useState(100);
-  const [long, setLong] = useState(100);
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(position => {
-      const lat = position.coords.latitude;
-      const long = position.coords.longitude;
-      setLat(lat);
-      setLong(long);
-    });
-  }, []);
-
-  useEffect(() => {
-    axios
-      .get("https://community-open-weather-map.p.rapidapi.com/weather", {
-        headers: {
-          "x-rapidapi-host": "community-open-weather-map.p.rapidapi.com",
-          "x-rapidapi-key": "0006459f98mshf33d5a7b9d1d9adp1f9dc9jsnb814693123d6"
-        },
-        params: {
-          lat: lat,
-          lon: long,
-          units: "imperial"
-        }
-      })
-      .then(res => {
-        setTemp(res.data.main.temp);
-      });
-  }, [lat, long]);
-
-  const handleSave = () => {
-    let today = new Date();
-    today = moment(today).format("YYYY-MM-DD HH:mm");
-    db.collection("users")
-      .doc(props.user.uid)
-      .collection("surveys")
-      .add({ temp: temp, happiness: radioValue, sleep: sleep, date: today })
-      .then(() => {
-        props.history.push("/app/charts/");
-      });
-  };
-
-  return (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <Paper style={{ padding: 30, width: 400, marginTop: 30 }}>
-        <Typography>How many hours did you sleep last night?</Typography>
-        <TextField
-          fullWidth
-          value={sleep}
-          onChange={e => {
-            setSleep(e.target.value);
-          }}
-        />
-        <Typography style={{ marginTop: 20 }}>
-          How happy do you feel today?
-        </Typography>
-        <div>
-          <Radio
-            Icon={<VeryDissatisfiedIcon />}
-            checkedIcon={<VeryDissatisfiedIcon />}
-            value={1}
-            checked={radioValue === 1}
-            onChange={() => {
-              setRadioValue(1);
-            }}
-          />
-          <Radio
-            Icon={<DissatisfiedIcon />}
-            checkedIcon={<DissatisfiedIcon />}
-            value={2}
-            checked={radioValue === 2}
-            onChange={() => {
-              setRadioValue(2);
-            }}
-          />
-          <Radio
-            Icon={<SatisfiedIcon />}
-            checkedIcon={<SatisfiedIcon />}
-            value={3}
-            checked={radioValue === 3}
-            onChange={() => {
-              setRadioValue(3);
-            }}
-          />
-          <Radio
-            Icon={<VerySatisfiedIcon />}
-            checkedIcon={<VerySatisfiedIcon />}
-            value={4}
-            checked={radioValue === 4}
-            onChange={() => {
-              setRadioValue(4);
-            }}
-          />
-        </div>
-        <Button
-          color="primary"
-          variant="contained"
-          style={{ marginTop: 20 }}
-          onClick={handleSave}
-        >
-          Save
-        </Button>
-      </Paper>
-    </div>
-  );
-}
-
-function Charts(props) {
-  const [temp, setTemp] = useState([]);
-  const [happiness, setHappiness] = useState([]);
-  const [sleep, setSleep] = useState([]);
-
-  useEffect(() => {
-    const unsubscribe = db
-      .collection("users")
-      .doc(props.user.uid)
-      .collection("surveys")
-      .onSnapshot(snapshot => {
-        const temp_array = [];
-        const happiness_array = [];
-        const sleep_array = [];
-
-        snapshot.forEach(s => {
-          const data = s.data();
-          temp_array.push({ x: data.date, y: data.temp });
-          happiness_array.push({ x: data.date, y: data.happiness });
-          sleep_array.push({ x: data.date, y: data.sleep });
-        });
-
-        setTemp(temp_array);
-        setHappiness(happiness_array);
-        setSleep(sleep_array);
-      });
-
-    return unsubscribe;
-  }, [props.user]);
-
-  const data = {
-    datasets: [
-      {
-        label: "Temperature",
-        data: temp,
-        backgroundColor: "transparent",
-        borderColor: "green",
-        borderWidth: 1,
-        yAxisID: "A"
-      },
-      {
-        label: "Sleep",
-        data: sleep,
-        backgroundColor: "transparent",
-        borderColor: "blue",
-        borderWidth: 1,
-        yAxisID: "B"
-      },
-      {
-        label: "Happiness",
-        data: happiness,
-        backgroundColor: "transparent",
-        borderColor: "red",
-        borderWidth: 1,
-        yAxisID: "B"
-      }
-    ]
-  };
-
-  const options = {
-    scales: {
-      yAxes: [{ id: "A", position: "left" }, { id: "B", position: "right" }],
-      xAxes: [{ type: "time", time: { DisplayFormats: { hour: "MMM D" } } }]
-    }
-  };
-
-  return (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <Paper style={{ width: 600, marginTop: 30, padding: 30 }}>
-        <Typography variant="h6" style={{ marginBottom: 30 }}>
-          Health Stats over Time
-        </Typography>
-        <Line data={data} options={options} />
-      </Paper>
     </div>
   );
 }
