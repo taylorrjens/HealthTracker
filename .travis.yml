@@ -10,5 +10,5 @@ deploy:
   skip_cleanup: true
   provider: firebase
   token: $FIREBASE_TOKEN
-  project: health-tracker-148bc
+  project: tutoringapp-c127c
   
